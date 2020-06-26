@@ -581,7 +581,8 @@ Object.defineProperty(jQuery.trumbowyg, 'defaultOptions', {
 
             var ctrl = false,
                 composition = false,
-                debounceButtonPaneStatus;
+                debounceButtonPaneStatus,
+                debounceWrapEmpty;
 
             t.$ed
                 .on('dblclick', 'img', t.o.imgDblClickHandler)
@@ -593,7 +594,8 @@ Object.defineProperty(jQuery.trumbowyg, 'defaultOptions', {
                         try {
                             t.execCmd(key.fn, key.param);
                             return false;
-                        } catch (c) {}
+                        } catch (c) {
+                        }
                     } else {
                         if (t.o.tabToIndent && e.key === 'Tab') {
                             try {
@@ -603,7 +605,8 @@ Object.defineProperty(jQuery.trumbowyg, 'defaultOptions', {
                                     t.execCmd('indent', true, null);
                                 }
                                 return false;
-                            } catch (c) {}
+                            } catch (c) {
+                            }
                         }
                     }
                 })
@@ -668,13 +671,14 @@ Object.defineProperty(jQuery.trumbowyg, 'defaultOptions', {
                     }
                 })
                 .on('keyup focus', function () {
-                    if (!t.$ta.val().match(/<.*>/)) {
-                        setTimeout(function () {
+                    clearTimeout(debounceWrapEmpty);
+                    debounceWrapEmpty = setTimeout(function () {
+                        if (!t.$ta.val().match(/<.*>/) && !t.doc.queryCommandValue('formatBlock')) {
                             var block = t.isIE ? '<p>' : 'p';
                             t.doc.execCommand('formatBlock', false, block);
                             t.syncCode();
-                        }, 0);
-                    }
+                        }
+                    }, 50);
                 })
                 .on('cut drop', function () {
                     setTimeout(function () {
